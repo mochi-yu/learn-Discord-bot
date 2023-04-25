@@ -48,12 +48,27 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent):
       await payload.member.add_roles(role)
       print("ロールを追加しました")
     elif payload.emoji.name == "❌":
+      # ×のリアクションをしたユーザのロールを取り消す
       remove_roles = [
         discord.utils.get(role_list, name="role1"),
         discord.utils.get(role_list, name="role2")
       ]
       await payload.member.remove_roles(*remove_roles)
       print("ロールをリセットしました")
+
+      # ✖のリアクションをしたユーザのリアクションを取り消す
+      ch: discord.TextChannel = await payload.member.guild.fetch_channel(payload.channel_id)
+      print("メッセージのあるチャンネルを取得しました。")
+      msg: discord.Message = await ch.fetch_message(payload.message_id)
+      print("対象のメッセージを取得しました。")
+      # reactions: list[discord.Reaction] = await msg.reactions
+      for r in msg.reactions:
+        if r.emoji != "❌":
+          await msg.remove_reaction(r, payload.member)
+        elif r.emoji == "❌":
+          removeEmojiReaction = r
+      await msg.remove_reaction(removeEmojiReaction, payload.member)
+      print('リアクションを除去しました')
     else:
       print("関係の無いリアクションが追加されました。")
 
